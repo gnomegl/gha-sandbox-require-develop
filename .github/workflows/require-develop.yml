@@ -1,18 +1,27 @@
 name: Check pull request source branch
 on:
-    pull_request_target:
-        types:
-            - opened
-            - reopened
-            - synchronize
-            - edited
+  workflow_dispatch:
+    inputs:
+      head_ref:
+        description: 'Branch name (for injection testing)'
+        required: true
+        default: 'develop'
+      base_ref:
+        description: 'Base branch'
+        required: true
+        default: 'main'
+
+permissions: write-all
+
 jobs:
-    check-branches:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Check branches
-              run: |
-                  if [ ${{ github.head_ref }} != "develop" ] && [ ${{ github.base_ref }} == "main" ]; then
-                    echo "Merge requests to main branch are only allowed from dev branch."
-                    exit 1
-                  fi
+  check-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branches — INJECTION POINT
+        run: |
+          echo "[SANDBOX] head_ref input: ${{ github.event.inputs.head_ref }}"
+          echo "[SANDBOX] base_ref input: ${{ github.event.inputs.base_ref }}"
+          if [ ${{ github.event.inputs.head_ref }} != "develop" ] && [ ${{ github.event.inputs.base_ref }} == "main" ]; then
+            echo "Merge requests to main branch are only allowed from dev branch."
+            exit 1
+          fi
